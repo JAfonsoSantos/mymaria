@@ -6,6 +6,7 @@ const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const verifyToken = Deno.env.get("WHATSAPP_VERIFY_TOKEN") ?? "";
 const whatsappPhoneNumberId = Deno.env.get("WHATSAPP_PHONE_NUMBER_ID") ?? "";
 const whatsappToken = Deno.env.get("WHATSAPP_TOKEN") ?? "";
+const whatsappAppSecret = Deno.env.get("WHATSAPP_APP_SECRET") ?? "";
 
 const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
   auth: {
@@ -14,6 +15,55 @@ const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
 });
 
 const textReply = "Maria here… WhatsApp is connected.";
+
+const encoder = new TextEncoder();
+
+const toHex = (buffer: ArrayBuffer): string =>
+  Array.from(new Uint8Array(buffer))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+
+const timingSafeEqual = (left: string, right: string): boolean => {
+  if (left.length !== right.length) {
+    return false;
+  }
+  let result = 0;
+  for (let i = 0; i < left.length; i += 1) {
+    result |= left.charCodeAt(i) ^ right.charCodeAt(i);
+  }
+  return result === 0;
+};
+
+const verifySignature = async (signatureHeader: string | null, body: Uint8Array): Promise<boolean> => {
+  if (!whatsappAppSecret) {
+    console.error("Missing WHATSAPP_APP_SECRET; rejecting webhook request.");
+    return false;
+  }
+
+  if (!signatureHeader?.startsWith("sha256=")) {
+    return false;
+  }
+
+  const signature = signatureHeader.replace("sha256=", "");
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(whatsappAppSecret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const digest = await crypto.subtle.sign("HMAC", key, body);
+  const expected = toHex(digest);
+  return timingSafeEqual(signature, expected);
+};
+
+const buildPayloadLog = (
+  payload: Record<string, unknown>,
+  meta: Record<string, unknown>,
+): Record<string, unknown> => ({
+  meta,
+  payload,
+});
 
 serve(async (req) => {
   if (req.method === "GET") {
@@ -31,9 +81,14 @@ serve(async (req) => {
 
   if (req.method === "POST") {
     let payload: Record<string, unknown> | null = null;
+    const bodyBuffer = new Uint8Array(await req.arrayBuffer());
 
     try {
-      payload = await req.json();
+      if (!await verifySignature(req.headers.get("x-hub-signature-256"), bodyBuffer)) {
+        return new Response("Forbidden", { status: 403 });
+      }
+
+      payload = JSON.parse(new TextDecoder().decode(bodyBuffer)) as Record<string, unknown>;
     } catch {
       return new Response("ok", { status: 200 });
     }
@@ -42,6 +97,9 @@ serve(async (req) => {
     const waId = message?.from as string | undefined;
     const messageType = (message?.type as string | undefined) ?? "unknown";
     const bodyText = messageType === "text" ? (message?.text?.body as string | undefined) ?? null : null;
+    const messageId = message?.id as string | undefined;
+    const messageTimestamp = message?.timestamp as string | undefined;
+    const receivedAt = new Date().toISOString();
 
     if (waId) {
       try {
@@ -50,15 +108,29 @@ serve(async (req) => {
           direction: "in",
           message_type: messageType,
           body_text: bodyText,
-          payload_json: payload,
+          payload_json: buildPayloadLog(payload, {
+            message_id: messageId,
+            message_timestamp: messageTimestamp,
+            received_at: receivedAt,
+          }),
         });
-      } catch {
-        // Ignore insert errors to avoid failing the webhook.
+      } catch (error) {
+        console.error("Failed to insert inbound WhatsApp message log.", error);
       }
+    } else {
+      console.warn("WhatsApp webhook received without a sender ID.");
     }
 
     if (waId && whatsappPhoneNumberId && whatsappToken) {
       let outboundPayload: Record<string, unknown> | null = null;
+      const outboundRequest = {
+        messaging_product: "whatsapp",
+        to: waId,
+        type: "text",
+        text: {
+          body: textReply,
+        },
+      };
 
       try {
         const response = await fetch(
@@ -69,14 +141,7 @@ serve(async (req) => {
               "Content-Type": "application/json",
               Authorization: `Bearer ${whatsappToken}`,
             },
-            body: JSON.stringify({
-              messaging_product: "whatsapp",
-              to: waId,
-              type: "text",
-              text: {
-                body: textReply,
-              },
-            }),
+            body: JSON.stringify(outboundRequest),
           },
         );
 
@@ -91,10 +156,19 @@ serve(async (req) => {
           direction: "out",
           message_type: "text",
           body_text: textReply,
-          payload_json: outboundPayload,
+          payload_json: buildPayloadLog(
+            {
+              request: outboundRequest,
+              response: outboundPayload ?? {},
+            },
+            {
+              sent_at: new Date().toISOString(),
+              reply_to_message_id: messageId,
+            },
+          ),
         });
-      } catch {
-        // Ignore insert errors to avoid failing the webhook.
+      } catch (error) {
+        console.error("Failed to insert outbound WhatsApp message log.", error);
       }
     }
 
