@@ -31,32 +31,44 @@ const Register = () => {
 
     setIsLoading(true);
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          name: name,
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: name,
+          },
+          emailRedirectTo: window.location.origin,
         },
-        emailRedirectTo: window.location.origin,
-      },
-    });
-
-    if (error) {
-      toast({
-        title: "Registration failed",
-        description: error.message,
-        variant: "destructive",
       });
-      setIsLoading(false);
-      return;
-    }
 
-    toast({
-      title: "Check your email",
-      description: "We've sent you a confirmation link to verify your account.",
-    });
-    navigate("/login");
+      if (error) {
+        toast({
+          title: "Registration failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data.session) {
+        toast({
+          title: "Account created",
+          description: "You're signed in and ready to go.",
+        });
+        navigate("/app");
+        return;
+      }
+
+      toast({
+        title: "Check your email",
+        description: "Check your email to confirm your account.",
+      });
+      navigate("/login");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
