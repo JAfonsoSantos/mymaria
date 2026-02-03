@@ -34,7 +34,7 @@ const timingSafeEqual = (left: string, right: string): boolean => {
   return result === 0;
 };
 
-const verifySignature = async (signatureHeader: string | null, body: Uint8Array): Promise<boolean> => {
+const verifySignature = async (signatureHeader: string | null, body: ArrayBuffer): Promise<boolean> => {
   if (!whatsappAppSecret) {
     console.error("Missing WHATSAPP_APP_SECRET; rejecting webhook request.");
     return false;
@@ -81,7 +81,7 @@ serve(async (req) => {
 
   if (req.method === "POST") {
     let payload: Record<string, unknown> | null = null;
-    const bodyBuffer = new Uint8Array(await req.arrayBuffer());
+    const bodyBuffer = await req.arrayBuffer();
 
     try {
       if (!await verifySignature(req.headers.get("x-hub-signature-256"), bodyBuffer)) {
