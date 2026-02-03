@@ -81,13 +81,61 @@ const Privacy = () => {
               </p>
             </section>
 
+            <section id="data-deletion">
+              <h2 className="text-2xl font-semibold text-foreground mb-4">6. User Data Deletion</h2>
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                You have the right to request deletion of all your personal data from MyMaria at any time. 
+                We are committed to honoring deletion requests promptly.
+              </p>
+              
+              <h3 className="text-lg font-medium text-foreground mb-2">How to Request Data Deletion</h3>
+              <p className="text-muted-foreground leading-relaxed mb-3">
+                To request deletion of your data, you can:
+              </p>
+              <ol className="list-decimal pl-6 text-muted-foreground space-y-2 mb-4">
+                <li>
+                  <strong>Email us directly</strong> at{" "}
+                  <a href="mailto:support@mymaria.io?subject=Data%20Deletion%20Request" className="text-primary hover:underline">
+                    support@mymaria.io
+                  </a>{" "}
+                  with the subject line "Data Deletion Request"
+                </li>
+                <li>
+                  <strong>Use our Contact form</strong> at{" "}
+                  <a href="/contact" className="text-primary hover:underline">
+                    mymaria.io/contact
+                  </a>
+                </li>
+                <li>
+                  <strong>Delete your account</strong> directly from your dashboard settings (if logged in)
+                </li>
+              </ol>
+
+              <h3 className="text-lg font-medium text-foreground mb-2">What We Delete</h3>
+              <p className="text-muted-foreground leading-relaxed mb-3">
+                Upon receiving your deletion request, we will permanently delete:
+              </p>
+              <ul className="list-disc pl-6 text-muted-foreground space-y-2 mb-4">
+                <li>Your account information (email, name, preferences)</li>
+                <li>All messages and conversation history</li>
+                <li>All stored memories and personal data</li>
+                <li>Reminders and task data</li>
+                <li>Any other data associated with your account</li>
+              </ul>
+
+              <h3 className="text-lg font-medium text-foreground mb-2">Processing Time</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                We will process your deletion request within <strong>30 days</strong> of receiving it. 
+                You will receive a confirmation email once your data has been permanently deleted.
+              </p>
+            </section>
+
             <section>
-              <h2 className="text-2xl font-semibold text-foreground mb-4">6. Your Rights</h2>
-              <p className="text-muted-foreground leading-relaxed">You have the right to:</p>
+              <h2 className="text-2xl font-semibold text-foreground mb-4">7. Your Other Rights</h2>
+              <p className="text-muted-foreground leading-relaxed">In addition to data deletion, you have the right to:</p>
               <ul className="list-disc pl-6 text-muted-foreground space-y-2 mt-3">
                 <li><strong>Access</strong> – Request a copy of your personal data</li>
                 <li><strong>Correction</strong> – Update or correct inaccurate data</li>
-                <li><strong>Deletion</strong> – Request deletion of your data</li>
                 <li><strong>Export</strong> – Receive your data in a portable format</li>
                 <li><strong>Opt-out</strong> – Disable memory and other optional features</li>
               </ul>
@@ -100,7 +148,7 @@ const Privacy = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-foreground mb-4">7. Data Security</h2>
+              <h2 className="text-2xl font-semibold text-foreground mb-4">8. Data Security</h2>
               <p className="text-muted-foreground leading-relaxed">
                 We implement industry-standard security measures to protect your data, including:
               </p>
@@ -113,7 +161,7 @@ const Privacy = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-foreground mb-4">8. Children's Privacy</h2>
+              <h2 className="text-2xl font-semibold text-foreground mb-4">9. Children's Privacy</h2>
               <p className="text-muted-foreground leading-relaxed">
                 MyMaria is not intended for users under the age of 13. We do not knowingly collect 
                 personal information from children under 13. If we become aware of such data, we will 
@@ -122,7 +170,7 @@ const Privacy = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-foreground mb-4">9. Changes to This Policy</h2>
+              <h2 className="text-2xl font-semibold text-foreground mb-4">10. Changes to This Policy</h2>
               <p className="text-muted-foreground leading-relaxed">
                 We may update this Privacy Policy from time to time. We will notify you of significant 
                 changes via email or through the Service. The "Last updated" date at the top indicates 
@@ -131,7 +179,7 @@ const Privacy = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-foreground mb-4">10. Contact Us</h2>
+              <h2 className="text-2xl font-semibold text-foreground mb-4">11. Contact Us</h2>
               <p className="text-muted-foreground leading-relaxed">
                 If you have questions about this Privacy Policy or your personal data, please contact us at:{" "}
                 <a href="mailto:support@mymaria.io" className="text-primary hover:underline">
